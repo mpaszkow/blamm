@@ -193,6 +193,10 @@ void Motif::computeTheoreticalSpectrum(size_t numBins, const array<float, 4>& ba
 
 void Motif::PFM2PWM(const std::array<size_t, 4>& bgCounts, float pseudoCount)
 {
+        // do nothing if the motif was loaded from a PWM file directly
+        if (PFM.empty() && !PWM.empty())
+                return;
+
         // compute the background probability for ACGT
         float bgTotCounts = (float)accumulate(bgCounts.begin(), bgCounts.end(), 0ull);
         bgTotCounts += 4.0f * pseudoCount;
@@ -326,6 +330,8 @@ void MotifContainer::load(const std::string& filename, bool loadPermutations)
 
         if ((filename.size() > 7) && (filename.substr(filename.size() - 7) == ".jaspar"))
                 loadJasparMotifs(filename, allMotifs);
+        else if ((filename.size() > 4) && (filename.substr(filename.size() - 4) == ".pwm"))
+                loadPWMMotifs(filename, allMotifs);
         else
                 loadCBMotifs(filename, allMotifs);
 
@@ -432,6 +438,36 @@ void MotifContainer::loadJasparMotifs(const std::string& filename,
                 for (size_t i = 0; i < m.getCount(); i++)
                         ofs << consensus[i] << "\n";
         }*/
+
+        sort(motifs.begin(), motifs.end());
+}
+
+void MotifContainer::loadPWMMotifs(const std::string& filename,
+                                  vector<Motif>& motifs)
+{
+        ifstream ifs(filename.c_str());
+        if (!ifs)
+                throw runtime_error("Could not open file: " + filename);
+
+        while (ifs.good()) {
+                string temp;
+                getline(ifs, temp);
+                if (temp.empty())
+                        continue;
+                if (temp.front() == '>') {      // add a new motif
+                        motifs.push_back(Motif(temp.substr(1)));
+                        continue;
+                }
+
+                if (motifs.empty())
+                        throw runtime_error("Incorrect motif file format: " + filename);
+
+                istringstream iss(temp);
+                float A, C, G, T;
+                iss >> A >> C >> G >> T;
+
+                motifs.back().addCharacterPWM({A, C, G, T});
+        }
 
         sort(motifs.begin(), motifs.end());
 }

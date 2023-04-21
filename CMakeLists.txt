@@ -49,7 +49,7 @@ find_package(BLAS REQUIRED)
 find_package(Threads REQUIRED)
 
 # write the config.h configuration file
-configure_file(cmake/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/src/config.h)
+configure_file(cmake/config.h.in "${CMAKE_CURRENT_BINARY_DIR}/src/config.h")
 add_definitions(-DHAVE_CONFIG_H)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/src")

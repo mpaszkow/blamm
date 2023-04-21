@@ -208,6 +208,14 @@ public:
         }
 
         /**
+         * Add a character directly to the position weight matrix (PWM)
+         * @param w weights the character to add
+         */
+        void addCharacterPWM(const std::array<float, 4>& w) {
+                PWM.push_back(w);
+        }
+
+        /**
          * Convert a PFM into a PWM given background nucleotide counts
          * @param bgCounts Background nucleotide counts (ACTG)
          * @param pseudoCounts Pseudo counts for both the motif PFM and bgCounts
@@ -220,7 +228,9 @@ public:
          * @return The size of a motif
          */
         size_t size() const {
-                return PFM.size();
+                if (PWM.empty())
+                        return PFM.size();
+                return PWM.size();
         }
 
         /**
@@ -442,6 +452,14 @@ public:
          * @param motifs Vector to store motifs (output)
          */
         void loadJasparMotifs(const std::string& filename,
+                              std::vector<Motif>& motifs);
+
+        /**
+         * Load direct PWM motifs from disk
+         * @param filename Filename of the motif input file
+         * @param motifs Vector to store motifs (output)
+         */
+        void loadPWMMotifs(const std::string& filename,
                               std::vector<Motif>& motifs);
 
         /**
